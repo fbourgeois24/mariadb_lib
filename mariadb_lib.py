@@ -28,6 +28,7 @@ class mariadb_database():
 	def open(self):
 		""" Méthode pour créer un curseur """
 		# On essaye de fermer le curseur avant d'en recréer un 
+		self.connect()
 		try:
 			self.cursor.close()
 		except:
@@ -40,19 +41,26 @@ class mariadb_database():
 
 	def close(self, commit = False):
 		""" Méthode pour détruire le curseur, avec ou sans commit """
+		if commit:
+			self.db.commit()
 		self.cursor.close()
+		self.disconnect()
+
+	def commit(self):
+		""" Méthode qui met à jour la db """
+		self.db.commit()
 		
 	def exec(self, query, params = None, fetch = "all"):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du renvoi d'info ou non
-		if "SELECT" in query[:20] or "RETURNING" in query:
-			returning = True
+		if not "SELECT" in query[:20]:
+			commit = True
 		else:
-			returning = False
+			commit = False
 		if self.open():
 			self.cursor.execute(query, params)
 			# Si pas de commit ce sera une récupération
-			if returning:	
+			if not commit or "RETURNING" in query:	
 				if fetch == "all":
 					value = self.fetchall()
 				elif fetch == "one":
@@ -68,7 +76,7 @@ class mariadb_database():
 				self.close()
 				return value
 			else:
-				self.close()
+				self.close(commit=commit)
 		else:
 			raise AttributeError("Erreur de création du curseur pour l'accès à la db")
 
