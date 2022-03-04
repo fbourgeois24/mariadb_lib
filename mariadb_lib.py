@@ -60,17 +60,16 @@ class mariadb_database():
 		if self.open():
 			self.cursor.execute(query, params)
 			# Si pas de commit ce sera une récupération
-			if not commit or "RETURNING" in query:	
+			if not commit:	
 				if fetch == "all":
 					value = self.fetchall()
 				elif fetch == "one":
 					value = self.fetchone()
 				elif fetch == "single":
 					# On essaie de prendre le premier mais si ça échoue c'est probablement que la requête n'a rien retourné
-					try:
-						value = self.fetchone()[0]
-					except:
-						value = None
+					value = self.fetchone()
+					if value is not None:
+						value = value[0]
 				elif fetch == 'list':
 					# On renvoie une liste qui reprend chaque premier élément de chaque ligne
 					value = [item[0] for item in self.fetchall()]
@@ -79,7 +78,9 @@ class mariadb_database():
 				self.close()
 				return value
 			else:
+				last_id = self.cursor.lastrowid
 				self.close(commit=commit)
+				return last_id
 		else:
 			raise AttributeError("Erreur de création du curseur pour l'accès à la db")
 
