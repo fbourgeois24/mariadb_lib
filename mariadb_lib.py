@@ -71,6 +71,9 @@ class mariadb_database():
 						value = self.fetchone()[0]
 					except:
 						value = None
+				elif fetch == 'list':
+					# On renvoie une liste qui reprend chaque premier élément de chaque ligne
+					value = [item[0] for item in self.fetchall()]
 				else:
 					raise ValueError("Wrong fetch type")
 				self.close()
