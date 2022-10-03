@@ -50,7 +50,7 @@ class mariadb_database():
 		""" Méthode qui met à jour la db """
 		self.db.commit()
 		
-	def exec(self, query, params = None, fetch = "all"):
+	def exec(self, query, params = None, fetch = "all", fetch_type="tuple"):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du renvoi d'info ou non
 		if not "SELECT" in query[:20]:
@@ -76,6 +76,12 @@ class mariadb_database():
 				else:
 					raise ValueError("Wrong fetch type")
 				self.close()
+				if fetch_type == "list":
+					if fetch == "all":
+						value = [list(item) for item in value]
+					elif fetch in ("one", "single"):
+						value = list(value)
+				
 				return value
 			else:
 				last_id = self.cursor.lastrowid
