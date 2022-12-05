@@ -77,7 +77,7 @@ class mariadb_database():
 					value = [item[0] for item in self.fetchall()]
 				else:
 					raise ValueError("Wrong fetch type")
-				self.close()
+				self.close(auto_connect=auto_connect)
 				if fetch_type == "list":
 					if fetch == "all":
 						value = [list(item) for item in value]
