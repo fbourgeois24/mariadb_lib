@@ -25,10 +25,11 @@ class mariadb_database():
 		""" Méthode pour déconnecter la db """
 		self.db.close()
 
-	def open(self):
+	def open(self, auto_connect):
 		""" Méthode pour créer un curseur """
 		# On essaye de fermer le curseur avant d'en recréer un 
-		self.connect()
+		if auto_connect:
+			self.connect()
 		try:
 			self.cursor.close()
 		except:
@@ -39,25 +40,26 @@ class mariadb_database():
 		else:
 			return False
 
-	def close(self, commit = False):
+	def close(self, commit = False, auto_connect=True):
 		""" Méthode pour détruire le curseur, avec ou sans commit """
 		if commit:
 			self.db.commit()
 		self.cursor.close()
-		self.disconnect()
+		if auto_connect:
+			self.disconnect()
 
 	def commit(self):
 		""" Méthode qui met à jour la db """
 		self.db.commit()
 		
-	def exec(self, query, params = None, fetch = "all", fetch_type="tuple"):
+	def exec(self, query, params = None, fetch = "all", fetch_type="tuple", auto_connect=True):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du renvoi d'info ou non
 		if not "SELECT" in query[:20]:
 			commit = True
 		else:
 			commit = False
-		if self.open():
+		if self.open(auto_connect=auto_connect):
 			self.cursor.execute(query, params)
 			# Si pas de commit ce sera une récupération
 			if not commit:	
@@ -85,7 +87,7 @@ class mariadb_database():
 				return value
 			else:
 				last_id = self.cursor.lastrowid
-				self.close(commit=commit)
+				self.close(commit=commit, auto_connect=auto_connect)
 				return last_id
 		else:
 			raise AttributeError("Erreur de création du curseur pour l'accès à la db")
