@@ -55,7 +55,7 @@ class mariadb_database():
 	def exec(self, query, params = None, fetch = "all", fetch_type="tuple", auto_connect=True):
 		""" Méthode pour exécuter une requête et qui ouvre et ferme  la db automatiquement """
 		# Détermination du renvoi d'info ou non
-		if not "SELECT" in query[:20]:
+		if (not "SELECT" in query[:20]) and (not "SHOW" in query[:20]):
 			commit = True
 		else:
 			commit = False
